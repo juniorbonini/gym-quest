@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Body, Controller, Get, Post, Param, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Param,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { UserService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
@@ -26,5 +34,10 @@ export class UsersController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDTO: UpdateUserDTO) {
     return this.userService.update(id, updateUserDTO);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.userService.remove(id);
   }
 }

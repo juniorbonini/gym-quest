@@ -40,7 +40,6 @@ export class UserService {
   }
 
   async update(id: string, data: UpdateUserDTO) {
-    console.log('ID RECEBIDO', id);
     const userCreated = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -53,5 +52,14 @@ export class UserService {
       where: { id },
       data,
     });
+  }
+
+  async remove(id: string) {
+    const userCreated = await this.prisma.user.delete({
+      where: { id },
+    });
+    if (!userCreated) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
   }
 }
