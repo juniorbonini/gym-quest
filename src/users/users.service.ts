@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -8,6 +7,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { PaginationQueryDTO } from './dto/pagination.querty.dto';
 
 @Injectable()
 export class UserService {
@@ -24,8 +24,33 @@ export class UserService {
     return user;
   }
 
-  async findAll() {
-    return this.prisma.user.findMany();
+  async findAllPaginated({ page, limit }: PaginationQueryDTO) {
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.prisma.user
+      .findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      })
+      .then(async (users) => {
+        const total = await this.prisma.user.count();
+        return [users, total];
+      });
+
+    const totalPages = Math.ceil(Number(total) / Number(limit));
+
+    return {
+      items,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrevious: page > 1,
+      },
+    };
   }
 
   async findById(id: string) {
