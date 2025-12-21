@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { ErrorResponseDTO } from './dto/error-response.dto';
 import { PaginationQueryDTO } from './dto/pagination.querty.dto';
+import { UserResponseDTO } from './dto/user-response.dto';
 
 @Controller('users')
 export class UsersController {
@@ -26,7 +27,7 @@ export class UsersController {
 
   @Post()
   @ApiBadRequestResponse({
-    description: 'Erro de validacdcdcção',
+    description: 'Erro de validação',
     type: ErrorResponseDTO,
   })
   async create(@Body() createUserDTO: CreateUserDTO) {
@@ -34,11 +35,14 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOkResponse({ example: 'Lista de usuários paginada' })
+  @ApiOkResponse({
+    description: 'Lista de usuários paginada',
+    type: UserResponseDTO,
+  })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   findAll(@Query() query: PaginationQueryDTO) {
-    return this.userService.findAllPaginated(query);
+    return this.userService.findAll(query.page, query.limit);
   }
 
   @Get(':id')

@@ -7,7 +7,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
-import { PaginationQueryDTO } from './dto/pagination.querty.dto';
 
 @Injectable()
 export class UserService {
@@ -24,21 +23,19 @@ export class UserService {
     return user;
   }
 
-  async findAllPaginated({ page, limit }: PaginationQueryDTO) {
+  async findAll(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
-    const [items, total] = await this.prisma.user
-      .findMany({
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-      })
-      .then(async (users) => {
-        const total = await this.prisma.user.count();
-        return [users, total];
-      });
+      }),
+      this.prisma.user.count(),
+    ]);
 
-    const totalPages = Math.ceil(Number(total) / Number(limit));
+    const totalPages = Math.ceil(total / limit);
 
     return {
       items,
@@ -48,7 +45,7 @@ export class UserService {
         total,
         totalPages,
         hasNext: page < totalPages,
-        hasPrevious: page > 1,
+        hasPrevious: page < 1,
       },
     };
   }
