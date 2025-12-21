@@ -1,10 +1,41 @@
+/* eslint-disable prettier/prettier */
+ 
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { ResponseInterceptor } from './common/response.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(
+  new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    exceptionFactory: (errors) => {
+      const formattedErrors = errors.flatMap((error) =>
+        Object.values(error.constraints || {}).map((message) => ({
+          property: error.property,
+          message,
+        })),
+      );
+
+      return new BadRequestException({
+        message:
+          formattedErrors.length === 1
+            ? `Erro no campo ${formattedErrors[0].property}`
+            : 'Erro de validcomeração',
+        errors: formattedErrors,
+      });
+    },
+  }),
+);
+
+  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Gym Quest Api')

@@ -11,14 +11,20 @@ import {
 import { UserService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { ApiBadRequestResponse } from '@nestjs/swagger';
+import { ErrorResponseDTO } from './dto/error-response.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @ApiBadRequestResponse({
+    description: 'Erro de validacdcdcção',
+    type: ErrorResponseDTO,
+  })
   async create(@Body() createUserDTO: CreateUserDTO) {
-    return this.userService.create(createUserDTO);
+    return await this.userService.create(createUserDTO);
   }
 
   @Get()
@@ -32,6 +38,14 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @ApiBadRequestResponse({
+    description: 'Erro de validação',
+    type: ErrorResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Usuário não encontrado',
+    type: ErrorResponseDTO,
+  })
   update(@Param('id') id: string, @Body() updateUserDTO: UpdateUserDTO) {
     return this.userService.update(id, updateUserDTO);
   }
