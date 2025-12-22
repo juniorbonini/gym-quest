@@ -11,7 +11,7 @@ export class CreateUserDTO {
   @ApiProperty({ example: 'example@gmail.com' })
   email: string;
 
-  @IsNotEmpty({ message: 'sua-senha-aqui' })
   @IsString()
+  @IsNotEmpty()
   password: string;
 }

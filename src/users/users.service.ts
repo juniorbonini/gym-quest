@@ -3,53 +3,38 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
+import * as bcrypt from 'bcrypt';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateUserDTO) {
-    const user = await this.prisma.user.create({
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    return this.prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
-        password: data.password,
+        password: hashedPassword,
       },
     });
-
-    return user;
   }
 
-  async findAll(
-    page = 1,
-    limit = 10,
-    search?: string,
-    orderBy: 'createdAt' | 'name' | 'email' = 'createdAt',
-    order: 'asc' | 'desc' = 'desc',
-  ) {
+  async findAll(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
-
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
-            { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
-          ],
-        }
-      : undefined;
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         skip,
         take: limit,
-        orderBy: { [orderBy]: order },
+        orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.user.count({ where }),
+      this.prisma.user.count(),
     ]);
 
     const totalPages = Math.ceil(total / limit);

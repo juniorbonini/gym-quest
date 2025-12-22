@@ -42,13 +42,7 @@ export class UsersController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   findAll(@Query() query: PaginationQueryDTO) {
-    return this.userService.findAll(
-      query.page,
-      query.limit,
-      query.search,
-      query.orderBy,
-      query.order,
-    );
+    return this.userService.findAll(query.page, query.limit);
   }
 
   @Get(':id')

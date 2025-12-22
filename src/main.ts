@@ -67,6 +67,14 @@ Toda a documentação disponível neste Swagger reflete fielmente o estado atual
 `,
     )
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'Bearer',
+        bearerFormat: 'JWT'
+      },
+      'JWT'
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
