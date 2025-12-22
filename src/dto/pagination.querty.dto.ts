@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class PaginationQueryDTO {
   @IsOptional()
@@ -13,4 +13,16 @@ export class PaginationQueryDTO {
   @Type(() => Number)
   @IsInt({ message: 'limit deve ser um número inteiro' })
   limit = 10;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsIn(['orderBy', 'name', 'email'])
+  orderBy?: 'createdAt' | 'name' | 'email' = 'createdAt';
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc' = 'desc';
 }

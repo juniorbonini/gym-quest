@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   ExceptionFilter,
@@ -7,14 +6,13 @@ import {
   ArgumentsHost,
   HttpException,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
 
     const statusCode = exception.getStatus();
     const exceptionResponse = exception.getResponse() as any;
@@ -29,8 +27,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
         typeof exceptionResponse === 'object' && exceptionResponse.errors
           ? exceptionResponse.errors
           : [],
-      path: request.url,
-      timestamp: new Date().toISOString(),
     });
   }
 }

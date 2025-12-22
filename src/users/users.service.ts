@@ -7,32 +7,48 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createUserDTO: CreateUserDTO) {
+  async create(data: CreateUserDTO) {
     const user = await this.prisma.user.create({
       data: {
-        name: createUserDTO.name,
-        email: createUserDTO.email,
+        name: data.name,
+        email: data.email,
       },
     });
 
     return user;
   }
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(
+    page = 1,
+    limit = 10,
+    search?: string,
+    orderBy: 'createdAt' | 'name' | 'email' = 'createdAt',
+    order: 'asc' | 'desc' = 'desc',
+  ) {
     const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
+            { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          ],
+        }
+      : undefined;
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { [orderBy]: order },
       }),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -66,9 +82,7 @@ export class UserService {
       where: { id },
     });
 
-    if (!userCreated) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
+    if (!userCreated) throw new NotFoundException('Usuário não encontrado');
 
     return this.prisma.user.update({
       where: { id },
@@ -77,11 +91,14 @@ export class UserService {
   }
 
   async remove(id: string) {
-    const userCreated = await this.prisma.user.delete({
+    const userCreated = await this.prisma.user.findUnique({
       where: { id },
     });
-    if (!userCreated) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
+
+    if (!userCreated) throw new NotFoundException('Uusário não encontrado');
+
+    return this.prisma.user.delete({
+      where: { id },
+    });
   }
 }

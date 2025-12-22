@@ -14,10 +14,4 @@ export class ErrorDetailDTO {
 export class ErrorResponseDTO {
   @ApiProperty({ example: 'Erro da validação' })
   message: string;
-
-  @ApiProperty({ example: '/users' })
-  path: string;
-
-  @ApiProperty({ example: '2025-12-20T:40:00:00.000Z' })
-  timestamp: string;
 }

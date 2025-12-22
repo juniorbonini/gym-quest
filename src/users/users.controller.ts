@@ -17,9 +17,9 @@ import {
   ApiOkResponse,
   ApiQuery,
 } from '@nestjs/swagger';
+import { PaginationQueryDTO } from 'src/dto/pagination.querty.dto';
+import { UserResponseDTO } from 'src/dto/user-response.dto';
 import { ErrorResponseDTO } from './dto/error-response.dto';
-import { PaginationQueryDTO } from './dto/pagination.querty.dto';
-import { UserResponseDTO } from './dto/user-response.dto';
 
 @Controller('users')
 export class UsersController {
@@ -42,7 +42,13 @@ export class UsersController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   findAll(@Query() query: PaginationQueryDTO) {
-    return this.userService.findAll(query.page, query.limit);
+    return this.userService.findAll(
+      query.page,
+      query.limit,
+      query.search,
+      query.orderBy,
+      query.order,
+    );
   }
 
   @Get(':id')
